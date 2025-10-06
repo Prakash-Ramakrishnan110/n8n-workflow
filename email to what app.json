@@ -1,0 +1,73 @@
+{
+  "name": "email to what app",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e8b09363-7897-4f9a-a595-8247a039e840",
+      "name": "Email Trigger (IMAP)",
+      "notesInFlow": true,
+      "credentials": {
+        "imap": {
+          "id": "O90Xu5khBxV68n9S",
+          "name": "IMAP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "from": "+14155238886",
+        "to": "+917695981639",
+        "toWhatsapp": true,
+        "message": "=New Email Received:\n\nFrom: {{$json[\"from\"]}}\nSubject: {{$json[\"subject\"]}}\nBody: {{$json[\"textPlain\"]}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "00d65f7d-5e84-4429-bc7f-a9f30be6b32d",
+      "name": "Twilio",
+      "credentials": {
+        "twilioApi": {
+          "id": "4QPAz0205QHNqjEm",
+          "name": "Twilio account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Email Trigger (IMAP)": {
+      "main": [
+        [
+          {
+            "node": "Twilio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ebf0169d-9caf-481e-b695-7e35e3a730fa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6dfa582335a029f82bd237dac3ed3de553a5ef48a1f842eb59afd30e02bd16af"
+  },
+  "id": "KsKDXWMf55md2Qin",
+  "tags": []
+}

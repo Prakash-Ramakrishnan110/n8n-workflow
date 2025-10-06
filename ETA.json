@@ -1,0 +1,290 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "delivery-update",
+        "options": {}
+      },
+      "name": "Incoming Delivery Request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        64
+      ],
+      "webhookId": "30cca398-39bd-40ff-a02a-45e85a6255e3",
+      "id": "0a6cc2d9-42e5-4b19-9395-8005b882dbc1"
+    },
+    {
+      "parameters": {
+        "url": "https://maps.googleapis.com/maps/api/directions/json",
+        "options": {}
+      },
+      "name": "Calculate ETA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        64
+      ],
+      "id": "85fdd0b1-01b5-4438-afd0-78baf80a1caf"
+    },
+    {
+      "parameters": {
+        "jsCode": "async function checkDuplicate() {\n  try {\n    const input = $input.all()[0]?.json;\n    if (!input) return [];\n    \n    const deliveryId = input.delivery_id || input.order_id || input.id;\n    if (!deliveryId) return $input.all();\n    \n    const sheetData = await $node['Log to Google Sheets'].getSheetData({\n      range: 'A2:A',\n      headerRow: false\n    });\n    \n    const exists = sheetData.some(row => row[0]?.toString() === deliveryId.toString());\n    return exists ? [] : $input.all();\n  } catch (error) {\n    console.error('Duplicate check failed:', error);\n    return $input.all();\n  }\n}\nreturn checkDuplicate();"
+      },
+      "name": "Check for Duplicate Delivery",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        -128
+      ],
+      "id": "d89a3de9-6a8f-4498-9c99-e9edc3902405"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "sheetId": "1XtlCcz441o2Y_BVqRrnNT9AAaXKusDOk4qLDaMYoC_Y/edit?gid=0#gid=0",
+        "options": {}
+      },
+      "name": "Log to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        368,
+        64
+      ],
+      "id": "6a02787f-7db3-42c6-8125-a3e56d1bf77c",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wNJGFh6KYN1Btw8u",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "whatsapp-media",
+        "options": {}
+      },
+      "name": "Receive Photo Proof",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        272
+      ],
+      "webhookId": "30b2e1c2-db77-456a-b25c-a86f2971a82a",
+      "id": "4b8f80b4-bdec-4238-ab07-6ca90887479d"
+    },
+    {
+      "parameters": {
+        "functionCode": "if (!$input.all()[0]?.json?.MediaUrl0) {\n  return [{ json: { error: 'No media URL provided' } }];\n}\nreturn [{\n  json: {\n    mediaUrl: $input.all()[0].json.MediaUrl0,\n    from: $input.all()[0].json.From,\n    deliveryId: $input.all()[0].json.delivery_id || $input.all()[0].json.id,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "name": "Extract Media URL",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        272
+      ],
+      "id": "be275e28-605a-4c15-ab4c-2ef65f974efc"
+    },
+    {
+      "parameters": {
+        "from": "+15072487236",
+        "to": "+917418132954",
+        "message": "Hi....Your Order is confirm Delivery",
+        "options": {}
+      },
+      "name": "Confirm Delivery via WhatsApp",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        160,
+        272
+      ],
+      "id": "b9ceefbe-57d2-4e06-be8d-5f3d96c46f8b",
+      "credentials": {
+        "twilioApi": {
+          "id": "rkpoHDMMgxAbb3o7",
+          "name": "Twilio account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "update",
+        "sheetId": "=\"sheetId\": \"your-actual-sheet-id-here\",  // Replace with real ID",
+        "options": {}
+      },
+      "name": "Update Photo URL in Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        368,
+        272
+      ],
+      "id": "eb8cfeca-fdc4-4445-a05b-7fa389def49a",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wNJGFh6KYN1Btw8u",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "from": "+15072487236",
+        "to": "+917418132954",
+        "message": "Hii.....Request Feedback via WhatsApp",
+        "options": {}
+      },
+      "name": "Request Feedback via WhatsApp",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        160,
+        464
+      ],
+      "id": "a9e6999b-af9c-4e4a-949f-ddc5e38ba26f",
+      "credentials": {
+        "twilioApi": {
+          "id": "rkpoHDMMgxAbb3o7",
+          "name": "Twilio account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "feedback",
+        "options": {}
+      },
+      "name": "Receive Feedback",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        464
+      ],
+      "webhookId": "3a890c4a-893b-4f64-86ec-19772383c6c8",
+      "id": "fed35207-e774-4e32-a8ac-3add2b6441b4"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "update",
+        "sheetId": "=\"sheetId\": \"your-actual-sheet-id-here\",  // Replace with real ID",
+        "options": {}
+      },
+      "name": "Log Feedback to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        368,
+        464
+      ],
+      "id": "0ddf3f3d-88f8-42da-99ee-eccd745db720",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wNJGFh6KYN1Btw8u",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Incoming Delivery Request": {
+      "main": [
+        [
+          {
+            "node": "Calculate ETA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate ETA": {
+      "main": [
+        [
+          {
+            "node": "Check for Duplicate Delivery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Duplicate Delivery": {
+      "main": [
+        [
+          {
+            "node": "Log to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive Photo Proof": {
+      "main": [
+        [
+          {
+            "node": "Extract Media URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Media URL": {
+      "main": [
+        [
+          {
+            "node": "Confirm Delivery via WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirm Delivery via WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Update Photo URL in Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive Feedback": {
+      "main": [
+        [
+          {
+            "node": "Log Feedback to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2091e46c-be4f-42d5-9c85-77b5aed10b00",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6dfa582335a029f82bd237dac3ed3de553a5ef48a1f842eb59afd30e02bd16af"
+  },
+  "id": "ppdz4vrAC6Y3Owx4",
+  "tags": []
+}
